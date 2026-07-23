@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual Environment
+venv/
+.venv/
+
+# Environment
+.env
+
+# Database
+audit_logs.db
+*.db
+
+# FAISS
+faiss_index/
+
+# Cache
+.cache/
+.pytest_cache/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Raw guideline PDFs
+data/raw_guidelines/
+
+# Keep folder structure
+!data/raw_guidelines/.gitkeep
