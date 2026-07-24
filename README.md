@@ -1,176 +1,404 @@
-# Healthcare RAG System for Clinical Decision Support
+# 🧠 Grounded RAG System
 
-Citation-grounded Retrieval-Augmented Generation over WHO/ICMR-style clinical
-guidelines, with a FastAPI backend, FAISS vector retrieval, HuggingFace
-medical-domain embeddings, a compliance audit trail, and a Streamlit demo UI.
+> **Production-grade Retrieval-Augmented Generation (RAG) system with Hybrid Retrieval (FAISS + BM25), Citation Verification, FastAPI, Streamlit, Docker, and LLM-powered Question Answering.**
 
-> ⚠️ This is a decision-**support** reference tool. It does not diagnose or
-> prescribe treatment, and every response must be reviewed by a qualified
-> clinician. See `app/models.py::QueryResponse.disclaimer`.
+A modular, production-oriented Retrieval-Augmented Generation (RAG) platform that provides **grounded, citation-backed responses** over large document collections. The system combines semantic retrieval, keyword search, cross-encoder reranking, metadata filtering, and citation verification to reduce hallucinations and improve answer reliability.
 
-## Architecture
+Although the current implementation demonstrates the system using **clinical guidelines**, the architecture is **domain-independent** and can be adapted to legal documents, financial reports, enterprise knowledge bases, research papers, policy documents, and technical documentation.
 
-```
-Streamlit UI  ──HTTP──►  FastAPI (auth + rate limit)
-                                │
-                                ▼
-                   Retriever: FAISS + metadata filter
-                   (source_org, doc_type, section, page)
-                                │
-                                ▼
-                 Citation-Grounded Prompt → LLM (Claude/GPT)
-                                │
-                                ▼
-              Grounding Verifier (regex-checks every citation
-              against the actually-retrieved chunk metadata)
-                                │
-                                ▼
-             Audit Logger (SQLite: query, chunks used,
-             grounding score, latency, timestamp)
-                                │
-                                ▼
-                  JSON response with verified citations
-```
+---
 
-### Why this is more than a notebook demo
+# 🚀 Features
 
-1. **Grounding is enforced twice.** The prompt instructs the LLM to cite
-   every claim in a strict format; a separate regex-based verifier then
-   checks each citation against the metadata of chunks *actually retrieved*
-   for that query. An LLM can still fabricate a citation — the verifier
-   catches it and reports a `grounding_score` instead of trusting the model.
-2. **Metadata-first retrieval.** Every chunk carries
-   `{source_org, doc_title, section, page, version, doc_type}`, so queries
-   can be filtered (e.g. "ICMR only") before semantic search runs.
-3. **Explicit refusal path.** If retrieval confidence is below
-   `SCORE_THRESHOLD`, the API returns `INSUFFICIENT_GROUNDED_INFORMATION`
-   instead of letting the LLM guess.
-4. **Audit trail** is a first-class citizen — every query, the chunks used,
-   and the grounding score are logged for traceability, a baseline
-   compliance requirement for clinical-adjacent tooling.
-5. **Pluggable LLM provider** (Anthropic or OpenAI) via env var — no vendor
-   lock-in baked into the code.
+- Hybrid Retrieval (FAISS + BM25)
+- HuggingFace Medical-Domain Embeddings
+- CrossEncoder Re-ranking
+- Metadata-aware Retrieval
+- Citation Grounding & Verification
+- FastAPI REST API
+- Interactive Streamlit Interface
+- SQLite Audit Logging
+- Docker & Docker Compose Support
+- Modular and Production-ready Architecture
 
-### Known limitations (worth stating out loud, not hiding)
+---
 
-- The rate limiter is in-memory and per-instance — swap for Redis before
-  running more than one API replica.
-- The audit log is SQLite — fine for a demo/single-instance deployment,
-  swap for Postgres/append-only storage for real production traffic.
-- API-key auth is a placeholder for a real IdP (OAuth2/OIDC) integration.
+# 📸 Demo
 
-## Project structure
+## Streamlit Dashboard
+
+Replace these images with your screenshots.
+
+### Home Page
 
 ```
-healthcare-rag/
-├── app/                    # FastAPI backend
-│   ├── main.py
+images/home.png
+```
+
+![Home](images/home.png)
+
+---
+
+### Question Answering
+
+```
+images/query.png
+```
+
+![Question Answering](images/query.png)
+
+---
+
+### Retrieved Citations
+
+```
+images/results.png
+```
+
+![Results](images/results.png)
+
+---
+
+### Audit Trail
+
+```
+images/audit.png
+```
+
+![Audit](images/audit.png)
+
+---
+
+# 🏗️ System Architecture
+
+```
+                        User
+                         │
+                         ▼
+                Streamlit Frontend
+                         │
+                         ▼
+                  FastAPI Backend
+                         │
+        ┌────────────────────────────────┐
+        │ Authentication + Rate Limiting │
+        └────────────────────────────────┘
+                         │
+                         ▼
+                Hybrid Retrieval Engine
+             ┌──────────────┬──────────────┐
+             │              │              │
+             ▼              ▼              ▼
+          FAISS          BM25        Metadata Filter
+             └──────────────┬──────────────┘
+                            ▼
+                Reciprocal Rank Fusion
+                            ▼
+                 CrossEncoder Re-ranking
+                            ▼
+                   Grounded Prompt Builder
+                            ▼
+                       Large Language Model
+                            ▼
+                Citation Verification Engine
+                            ▼
+                     Structured JSON Response
+                            ▼
+                     SQLite Audit Logging
+```
+
+---
+
+# ✨ Key Highlights
+
+Unlike many demo RAG projects, this system includes several production-oriented features.
+
+### Hybrid Retrieval
+
+Combines
+
+- Dense Retrieval (FAISS)
+- Sparse Retrieval (BM25)
+
+using Reciprocal Rank Fusion (RRF).
+
+---
+
+### CrossEncoder Re-ranking
+
+Initial retrieval results are re-ranked using a CrossEncoder model to significantly improve retrieval quality.
+
+---
+
+### Metadata Filtering
+
+Supports retrieval filtering using structured metadata such as
+
+- Source Organization
+- Document Type
+- Category
+- Version
+- Section
+- Page Number
+
+---
+
+### Citation Verification
+
+Every generated citation is validated against the retrieved document metadata before being returned.
+
+This provides an additional safeguard against hallucinated references.
+
+---
+
+### Audit Trail
+
+Every query records
+
+- User Question
+- Retrieved Documents
+- Citations
+- Grounding Score
+- Latency
+- Timestamp
+
+for traceability and debugging.
+
+---
+
+# 🛠️ Technology Stack
+
+| Category | Technologies |
+|-----------|--------------|
+| Language | Python |
+| Backend | FastAPI |
+| Frontend | Streamlit |
+| Vector Database | FAISS |
+| Keyword Retrieval | BM25 |
+| Embeddings | HuggingFace Sentence Transformers |
+| Re-ranking | CrossEncoder |
+| LLM | Groq / OpenAI / Anthropic / Gemini / OpenRouter |
+| Database | SQLite |
+| Containerization | Docker |
+| Deployment | Docker Compose |
+
+---
+
+# 📂 Project Structure
+
+```
+grounded-rag-system/
+
+├── app/
+│   ├── core/
+│   ├── middleware/
+│   ├── routers/
 │   ├── config.py
-│   ├── models.py
 │   ├── dependencies.py
-│   ├── core/                # RAG chain, vector store, prompts, audit
-│   ├── middleware/           # API-key auth + rate limiting
-│   └── routers/               # /query, /ingest, /health, /audit/recent
-├── ingestion/               # PDF loading, section-aware chunking, index build
-├── scripts/                 # Synthetic demo-data generator
-├── streamlit_app/           # Demo UI (thin HTTP client over the API)
-├── tests/                   # Unit tests, including grounding-verifier tests
-├── Dockerfile               # API image
-├── streamlit_app/Dockerfile # UI image
-└── docker-compose.yml       # Runs both services together
+│   └── main.py
+│
+├── ingestion/
+│
+├── scripts/
+│
+├── streamlit_app/
+│
+├── tests/
+│
+├── Dockerfile
+├── docker-compose.yml
+├── requirements.txt
+└── README.md
 ```
 
-## Quickstart
+---
 
-### 1. Configure environment
+# ⚙️ Installation
+
+## Clone Repository
 
 ```bash
-cp .env.example .env
+git clone https://github.com/YOUR_USERNAME/grounded-rag-system.git
+
+cd grounded-rag-system
 ```
 
-Then set `LLM_PROVIDER` and the matching API key in `.env`. Supported providers:
+---
 
-| `LLM_PROVIDER` | Cost | Get a key |
-|---|---|---|
-| `groq` (default) | Free, no credit card | https://console.groq.com/keys |
-| `gemini` | Free, no credit card | https://aistudio.google.com/apikey |
-| `openrouter` | Free `:free`-suffixed models | https://openrouter.ai/keys |
-| `anthropic` | Paid | https://console.anthropic.com |
-| `openai` | Paid | https://platform.openai.com |
-
-Make sure `LLM_MODEL` matches the provider (e.g. `llama-3.3-70b-versatile` for
-Groq, `gemini-2.5-flash` for Gemini) — see the comments in `.env.example`.
-
-### 2. Install dependencies
+## Create Virtual Environment
 
 ```bash
-python -m venv venv && source venv/bin/activate
+python -m venv venv
+```
+
+Windows
+
+```bash
+venv\Scripts\activate
+```
+
+Linux / Mac
+
+```bash
+source venv/bin/activate
+```
+
+---
+
+## Install Dependencies
+
+```bash
 pip install -r requirements.txt
 ```
 
-### 3. Generate demo guideline PDFs (synthetic — swap for real WHO/ICMR PDFs later)
+---
 
-```bash
-python scripts/generate_sample_data.py
+# 🔑 Environment Variables
+
+Create
+
+```
+.env
 ```
 
-To use real guidelines instead: drop PDFs into `data/raw_guidelines/`, plus a
-sidecar `<filename>.meta.json` per file, e.g.:
+Example
 
-```json
-{"source_org": "WHO", "doc_title": "Guideline for Malaria Treatment", "doc_type": "guideline", "version": "2024"}
+```env
+LLM_PROVIDER=groq
+
+GROQ_API_KEY=YOUR_KEY
+
+LLM_MODEL=llama-3.3-70b-versatile
+
+EMBEDDING_MODEL=pritamdeka/S-PubMedBert-MS-MARCO
+
+TOP_K=5
+
+SCORE_THRESHOLD=0.35
 ```
 
-### 4. Build the FAISS index
+---
+
+# 📄 Add Documents
+
+Place PDFs inside
+
+```
+data/raw_guidelines/
+```
+
+Then build the vector index.
 
 ```bash
 python -m ingestion.build_index
 ```
 
-### 5. Run the API
+---
+
+# ▶️ Run Backend
 
 ```bash
 uvicorn app.main:app --reload
 ```
 
-### 6. Run the Streamlit demo UI (separate terminal)
+API Documentation
+
+```
+http://localhost:8000/docs
+```
+
+---
+
+# ▶️ Run Streamlit
 
 ```bash
-export RAG_API_BASE_URL=http://localhost:8000/api/v1
-export RAG_API_KEY=demo-key-123
 streamlit run streamlit_app/app.py
 ```
 
-Open http://localhost:8501 — you get three tabs: **Ask a question**,
-**Ingest a guideline**, and **Audit trail**.
+Open
 
-### Or run everything via Docker Compose
+```
+http://localhost:8501
+```
+
+---
+
+# 🐳 Docker
+
+Build and run
 
 ```bash
 docker compose up --build
 ```
 
-- API → http://localhost:8000/docs (interactive OpenAPI docs)
-- Streamlit UI → http://localhost:8501
+---
 
-## Example API call
+# 🔍 Example Query
 
-```bash
-curl -X POST http://localhost:8000/api/v1/query \
-  -H "X-API-Key: demo-key-123" \
-  -H "Content-Type: application/json" \
-  -d '{
-        "question": "What is first-line pharmacotherapy for type 2 diabetes?",
-        "source_filter": ["ICMR"]
-      }'
+```
+What are the WHO recommendations for hypertension treatment?
 ```
 
-## Running tests
+---
+
+# 📈 API Response
+
+```json
+{
+  "answer": "...",
+  "citations": [
+    {
+      "source_org": "WHO",
+      "page": 18,
+      "section": "Treatment Recommendations"
+    }
+  ],
+  "grounding_verified": true,
+  "grounding_score": 1.0,
+  "latency_ms": 842
+}
+```
+
+---
+
+# 🧪 Running Tests
 
 ```bash
 pytest tests/ -v
 ```
 
-`tests/test_grounding.py` is the most important test file here — it directly
-exercises the citation-verification logic that underpins the "near-zero
-hallucination" claim, independent of any live LLM call.
+---
+
+# 🔮 Future Improvements
+
+- Multi-Query Retrieval
+- Context Compression
+- Adaptive Top-K Retrieval
+- Redis Rate Limiting
+- PostgreSQL Audit Database
+- OAuth2 Authentication
+- Retrieval Evaluation Dashboard
+- Kubernetes Deployment
+- CI/CD Pipeline
+- Multi-modal Document Support
+
+---
+
+# ⚠️ Disclaimer
+
+This project demonstrates **citation-grounded Retrieval-Augmented Generation** for document question answering.
+
+It is intended for research and educational purposes. Any domain-specific outputs (such as healthcare guidance) should always be reviewed by qualified professionals before being used for decision-making.
+
+---
+
+# 👩‍💻 Author
+
+**Shruti Agarwal**
+
+M.Tech, Biomedical Engineering  
+Indian Institute of Technology Kharagpur
+
+GitHub: https://github.com/YOUR_USERNAME
+
+LinkedIn: https://linkedin.com/in/YOUR_PROFILE
