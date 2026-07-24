@@ -43,9 +43,6 @@ COPY ingestion/ ./ingestion/
 # ------------------------------------------------------------
 COPY faiss_index/ ./faiss_index/
 
-# Optional (if you keep PDFs in the image)
-COPY data/ ./data/
-
 ENV PATH=/home/appuser/.local/bin:$PATH
 ENV PYTHONUNBUFFERED=1
 
