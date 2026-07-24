@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     llm_model: str = Field(default="claude-sonnet-4-6", alias="LLM_MODEL")
 
     embedding_model: str = Field(
-        default="pritamdeka/S-PubMedBert-MS-MARCO",
+        default="BAAI/bge-small-en-v1.5",
         alias="EMBEDDING_MODEL",
     )
 
