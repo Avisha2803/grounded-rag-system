@@ -14,9 +14,6 @@ venv/
 audit_logs.db
 *.db
 
-# FAISS
-faiss_index/
-
 # Cache
 .cache/
 .pytest_cache/
