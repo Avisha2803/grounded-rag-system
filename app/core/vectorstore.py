@@ -26,7 +26,7 @@ class VectorStoreManager:
         self.store = None
 
         self.bm25 = BM25Retriever()
-        self.reranker = CrossEncoderReranker()
+        self.reranker = None
 
         self._load_if_exists()
 
@@ -210,6 +210,11 @@ class VectorStoreManager:
             results.append((doc, score))
 
         # CrossEncoder re-ranking
+        # Lazy-load CrossEncoder only when needed
+        if self.reranker is None:
+            logger.info("Loading CrossEncoder reranker...")
+            self.reranker = CrossEncoderReranker()
+            
         results = self.reranker.rerank(
             query,
             results[:20],
