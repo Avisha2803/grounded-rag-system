@@ -396,9 +396,9 @@ It is intended for research and educational purposes. Any domain-specific output
 
 **Shruti Agarwal**
 
-M.Tech, Biomedical Engineering  
+M.Tech
 Indian Institute of Technology Kharagpur
 
-GitHub: https://github.com/YOUR_USERNAME
+GitHub: [https://github.com/Avisha2803]
 
-LinkedIn: https://linkedin.com/in/YOUR_PROFILE
+LinkedIn: https://www.linkedin.com/in/shruti2803/
